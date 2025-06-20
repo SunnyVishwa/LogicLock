@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>LogicLock</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="LogicLock is a fun password puzzle game. Beat the rules. Unlock logic.">
+  <meta name="keywords" content="LogicLock, password game, puzzle challenge, fun game">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #fff;
+      padding: 20px;
+      color: #222;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #777;
+      font-size: 0.95rem;
+      margin-bottom: 25px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      transition: border 0.3s;
+    }
+
+    input[type="text"]:focus {
+      border-color: #007bff;
+      outline: none;
+    }
+
+    .rule-box {
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 15px;
+      font-size: 0.95rem;
+      transition: background 0.3s ease;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    .passed {
+      background-color: #e8fce8;
+      border-left: 5px solid #2ecc71;
+      color: #2e7d32;
+    }
+
+    .failed {
+      background-color: #ffeaea;
+      border-left: 5px solid #e74c3c;
+      color: #c0392b;
+    }
+
+    .success {
+      background-color: #e0f7fa;
+      border-left: 5px solid #00bcd4;
+      font-weight: bold;
+      animation: bounce 0.5s ease;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      .rule-box {
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>🔐 LogicLock</h1>
+  <p class="subtitle">Can your password survive all the rules?</p>
+  <input type="text" id="password" placeholder="Type your password..." />
+  <div id="rules"></div>
+
+  <script>
+    const rules = [
+      {
+        text: "Password must be at least 8 characters long.",
+        check: pwd => pwd.length >= 8
+      },
+      {
+        text: "Password must include a number.",
+        check: pwd => /\d/.test(pwd)
+      },
+      {
+        text: "Password must include an uppercase letter.",
+        check: pwd => /[A-Z]/.test(pwd)
+      },
+      {
+        text: "Password must include a special character (!@#$...).",
+        check: pwd => /[!@#$%^&*()_+=<>?]/.test(pwd)
+      },
+      {
+        text: "Password must NOT contain the word 'password'.",
+        check: pwd => !/password/i.test(pwd)
+      },
+      {
+        text: "Password must include today's date: " + new Date().getDate(),
+        check: pwd => pwd.includes(new Date().getDate().toString())
+      },
+      {
+        text: "Password must be a palindrome.",
+        check: pwd => pwd === pwd.split('').reverse().join('')
+      },
+      {
+        text: "Password length must be a prime number.",
+        check: pwd => {
+          const n = pwd.length;
+          if (n < 2) return false;
+          for (let i = 2; i <= Math.sqrt(n); i++) {
+            if (n % i === 0) return false;
+          }
+          return true;
+        }
+      },
+      {
+        text: "Password must include an emoji.",
+        check: pwd => /\p{Emoji}/u.test(pwd)
+      },
+      {
+        text: "Password must include the word 'banana'.",
+        check: pwd => /banana/i.test(pwd)
+      }
+    ];
+
+    let currentRule = 0;
+    const input = document.getElementById("password");
+    const rulesContainer = document.getElementById("rules");
+
+    function renderRules(password) {
+      rulesContainer.innerHTML = "";
+      for (let i = 0; i <= currentRule; i++) {
+        const rule = rules[i];
+        const isPassed = rule.check(password);
+        const div = document.createElement("div");
+        div.className = `rule-box ${isPassed ? 'passed' : 'failed'}`;
+        div.textContent = `${isPassed ? '✔️' : '❌'} ${rule.text}`;
+        rulesContainer.appendChild(div);
+
+        if (!isPassed) return;
+      }
+
+      currentRule++;
+      if (currentRule < rules.length) {
+        const nextRule = rules[currentRule];
+        const nextDiv = document.createElement("div");
+        nextDiv.className = "rule-box failed";
+        nextDiv.textContent = `🔒 ${nextRule.text}`;
+        rulesContainer.appendChild(nextDiv);
+      } else {
+        const final = document.createElement("div");
+        final.className = "rule-box success";
+        final.textContent = "🎉 All Rules Passed. You’ve unlocked LogicLock!";
+        rulesContainer.appendChild(final);
+        input.disabled = true;
+      }
+    }
+
+    input.addEventListener("input", () => {
+      renderRules(input.value);
+    });
+  </script>
+</body>
+</html>
