@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>The Password Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #fffaf0;
+      color: #333;
+      max-width: 600px;
+      margin: auto;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    label {
+      font-weight: bold;
+    }
+
+    #password {
+      padding: 12px;
+      font-size: 16px;
+      width: 100%;
+      border: 2px solid #ccc;
+      border-radius: 6px;
+      margin-bottom: 10px;
+    }
+
+    .rule-box {
+      border-radius: 8px;
+      padding: 15px;
+      margin: 10px 0;
+      text-align: left;
+      border: 2px solid;
+      opacity: 0;
+      animation: fadeIn 0.6s ease forwards;
+    }
+
+    .passed {
+      background-color: #e7f8e7;
+      border-color: #3dbb3d;
+      color: #1a7f1a;
+      transition: border-color 0.3s ease, background-color 0.3s ease;
+    }
+
+    .failed {
+      background-color: #ffe6e6;
+      border-color: #ff4d4d;
+      color: #cc0000;
+      transition: border-color 0.3s ease, background-color 0.3s ease;
+    }
+
+    .rule-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .bounce {
+      animation: bounce 0.6s ease;
+    }
+
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+  </style>
+</head>
+<body>
+  <h1>* The Password Game *</h1>
+  <label for="password">Please choose a password</label>
+  <input type="text" id="password" placeholder="Type your password here..." />
+  <div id="rules"></div>
+
+  <script>
+    const rules = [
+      {
+        text: "Password must be at least 8 characters long.",
+        check: pwd => pwd.length >= 8
+      },
+      {
+        text: "Password must include a number.",
+        check: pwd => /\d/.test(pwd)
+      },
+      {
+        text: "Password must include an uppercase letter.",
+        check: pwd => /[A-Z]/.test(pwd)
+      },
+      {
+        text: "Password must include a special character (!@#$...).",
+        check: pwd => /[!@#$%^&*()_+=<>?]/.test(pwd)
+      },
+      {
+        text: "Password must NOT contain the word 'password'.",
+        check: pwd => !/password/i.test(pwd)
+      },
+      {
+        text: "Password must include today's date: " + new Date().getDate(),
+        check: pwd => pwd.includes(new Date().getDate().toString())
+      },
+      {
+        text: "Password must be a palindrome.",
+        check: pwd => pwd === pwd.split('').reverse().join('')
+      },
+      {
+        text: "Password length must be a prime number.",
+        check: pwd => {
+          const n = pwd.length;
+          if (n < 2) return false;
+          for (let i = 2; i <= Math.sqrt(n); i++) {
+            if (n % i === 0) return false;
+          }
+          return true;
+        }
+      },
+      {
+        text: "Password must include an emoji.",
+        check: pwd => /\p{Emoji}/u.test(pwd)
+      },
+      {
+        text: "Password must include the word 'banana'.",
+        check: pwd => /banana/i.test(pwd)
+      }
+    ];
+
+    let currentRule = 0;
+    const input = document.getElementById("password");
+    const rulesContainer = document.getElementById("rules");
+
+    function renderRules(password) {
+      rulesContainer.innerHTML = "";
+      for (let i = 0; i <= currentRule; i++) {
+        const rule = rules[i];
+        const isPassed = rule.check(password);
+        const div = document.createElement("div");
+        div.className = `rule-box ${isPassed ? 'passed' : 'failed'}`;
+        div.innerHTML = `<div class='rule-title'>${isPassed ? '✔️ Rule ' : '❌ Rule '}${i + 1}</div><div>${rule.text}</div>`;
+        rulesContainer.appendChild(div);
+
+        if (!isPassed) return;
+      }
+
+      currentRule++;
+      if (currentRule < rules.length) {
+        const nextRule = rules[currentRule];
+        const nextDiv = document.createElement("div");
+        nextDiv.className = "rule-box failed";
+        nextDiv.innerHTML = `<div class='rule-title'>🔒 Rule ${currentRule + 1}</div><div>${nextRule.text}</div>`;
+        rulesContainer.appendChild(nextDiv);
+      } else {
+        const final = document.createElement("div");
+        final.className = "rule-box passed bounce";
+        final.innerHTML = `<div class='rule-title'>🎉 All Rules Passed</div><div>Great job! Your final password is valid.</div>`;
+        rulesContainer.appendChild(final);
+        input.disabled = true;
+      }
+    }
+
+    input.addEventListener("input", () => {
+      renderRules(input.value);
+    });
+  </script>
+</body>
+</html>
